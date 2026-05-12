@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambridge HOTmaths</title>   <!-- Always shows SPIRE -->
+  <style>
+    body {
+      margin: 0;
+      background: #141414;
+      color: white;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 100;
+      font-weight: bold;
+      border: none;
+    }
+    .back-btn:hover {
+      background: #e50914;
+    }
+    .player-container {
+      max-width: 1280px;
+      margin: 90px auto 40px;
+      padding: 0 20px;
+    }
+    .title {
+      font-size: 2.5rem;
+      margin: 20px 0 15px;
+      font-weight: 700;
+    }
+    .controls {
+      margin: 20px 0 30px;
+    }
+    select {
+      padding: 12px 16px;
+      margin-right: 15px;
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+      font-size: 1.05rem;
+      min-width: 170px;
+    }
+    .player-frame {
+      width: 100%;
+      height: 720px;
+      border: none;
+      border-radius: 10px;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="goBack()">← Back to Browse</button>
+  <div class="player-container">
+    <h1 class="title" id="title"></h1>
+   
+    <div class="controls" id="tv-controls" style="display: none;">
+      <select id="seasonSelect" onchange="changeSeason()"></select>
+      <select id="episodeSelect" onchange="loadEpisode()"></select>
+    </div>
+    <iframe id="videoFrame" class="player-frame" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const title = decodeURIComponent(params.get('title') || 'Unknown Title');
+    const id = params.get('id');
+    const type = params.get('type');
+   
+    let currentSeason = parseInt(params.get('season')) || 1;
+    let currentEpisode = parseInt(params.get('episode')) || 1;
+
+    // Page title is always SPIRE
+    document.getElementById('title').textContent = title;
+
+    const videoFrame = document.getElementById('videoFrame');
+    const tvControls = document.getElementById('tv-controls');
+
+    const seasonData = {
+      1396: [7,13,13,13,16],
+      60059: [10,10,10,10,10,13],
+      71694: [10,10,10,10,10,10],
+      76479: [8,8,8,8,8],
+      66732: [8,9,8,9,8],
+      1402: [6,13,16,16,16,16],
+      60574: [6,6,6,6,6,6],
+      54650: [6,10,10],
+      94997: [8,8,8,8]
+    };
+
+    function saveToContinueWatching() {
+      let list = JSON.parse(localStorage.getItem('continueWatching') || '[]');
+      list = list.filter(item => !(item.id == id && item.type === type));
+      list.unshift({
+        id: id,
+        type: type,
+        title: title,
+        season: currentSeason,
+        episode: currentEpisode,
+        timestamp: Date.now()
+      });
+      list = list.slice(0, 15);
+      localStorage.setItem('continueWatching', JSON.stringify(list));
+    }
+
+    if (type === 'movie') {
+      videoFrame.src = `https://player.videasy.net/movie/${id}?overlay=true`;
+    } else {
+      tvControls.style.display = 'block';
+      const episodesPerSeason = seasonData[id] || Array(8).fill(10);
+      const seasonSelect = document.getElementById('seasonSelect');
+      episodesPerSeason.forEach((_, index) => {
+        const s = index + 1;
+        const option = document.createElement('option');
+        option.value = s;
+        option.textContent = `Season ${s}`;
+        if (s === currentSeason) option.selected = true;
+        seasonSelect.appendChild(option);
+      });
+
+      function populateEpisodes(season) {
+        const episodeSelect = document.getElementById('episodeSelect');
+        episodeSelect.innerHTML = '';
+        const epCount = episodesPerSeason[season - 1] || 10;
+        for (let e = 1; e <= epCount; e++) {
+          const option = document.createElement('option');
+          option.value = e;
+          option.textContent = `Episode ${e}`;
+          if (e === currentEpisode && season === currentSeason) option.selected = true;
+          episodeSelect.appendChild(option);
+        }
+      }
+
+      populateEpisodes(currentSeason);
+      loadEpisode();
+    }
+
+    function loadEpisode() {
+      const season = parseInt(document.getElementById('seasonSelect').value);
+      const episode = parseInt(document.getElementById('episodeSelect').value);
+      currentSeason = season;
+      currentEpisode = episode;
+      videoFrame.src = `https://player.videasy.net/tv/${id}/${season}/${episode}?overlay=true&nextEpisode=true&episodeSelector=true`;
+      saveToContinueWatching();
+    }
+
+    function changeSeason() {
+      currentSeason = parseInt(document.getElementById('seasonSelect').value);
+      currentEpisode = 1;
+      populateEpisodes(currentSeason);
+      loadEpisode();
+    }
+
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+
+    setInterval(saveToContinueWatching, 30000);
+    window.addEventListener('beforeunload', saveToContinueWatching);
+  </script>
+
+  <!-- Vercel Analytics -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flix</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="nav-left">
+      <div class="logo" onclick="window.location.reload()">FLIX</div>
+      <nav>
+        <a href="#" class="active">Home</a>
+        <a href="#">TV Shows</a>
+        <a href="#">Movies</a>
+        <a href="#">My List</a>
+      </nav>
+    </div>
+    
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search movies and TV shows...">
+    </div>
+
+    <div class="nav-right">
+      <div class="profile">
+        <img src="https://via.placeholder.com/32" alt="Profile" id="profile-pic">
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- HERO BANNER -->
+    <div id="hero" class="hero">
+      <div class="hero-content">
+        <h1 id="hero-title"></h1>
+        <p id="hero-overview"></p>
+        <button onclick="playFeatured()" class="btn play-btn">▶ Play Now</button>
+        <button onclick="addToMyList()" class="btn list-btn">+ My List</button>
+      </div>
+    </div>
+
+    <!-- CONTINUE WATCHING -->
+    <section id="continue-section" class="section hidden">
+      <h2 class="section-title">Continue Watching</h2>
+      <div class="row" id="continue-row"></div>
+    </section>
+
+    <!-- TRENDING / SEARCH RESULTS -->
+    <section id="main-section">
+      <h2 class="section-title" id="section-title">Trending Now</h2>
+      <div class="row" id="main-row"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
